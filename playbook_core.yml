@@ -1,0 +1,71 @@
+---
+- name: playbook_core.yml - blackarch base setup
+  hosts: localhost
+  become: yes
+
+  tasks:
+
+# ARCH FULL UPDATE  ----------------------------------------------------------
+
+    - name: update arch
+      pacman:
+        update_cache: yes
+        upgrade: yes
+
+# JOING THE DARK SIDE  -------------------------------------------------------
+
+    - name: Download the BlackArch strap.sh script
+      get_url:
+        url: https://blackarch.org/strap.sh
+        dest: /tmp/strap.sh
+        mode: '0755'
+
+
+# INSTALL VARIOUS PACKAGES  --------------------------------------------------
+
+    - name: install bunch of packages
+      pacman:
+        update_cache: yes
+        name:
+          - nvim                    # the right editor
+          - man-db                  # help pages
+          - git                     # to clone github repos
+          - curl                    # download utility
+          - wget                    # download utility
+          - rsync                   # copy utility
+          - fd                      # simpler find
+          - fzf                     # fuzzy filter, useful for file search
+          - bat                     # prettier cat
+          - tree                    # show files/directories structure
+          - unarchiver              # extract any archive
+          - fastfetch               # system info
+          - ncdu                    # investigate disk space usage
+          - btop                    # better resource monitor
+          - openbsd-netcat          # diagnose network issues using tiny server
+          - tcpdump                 # diagnose network issues by watching ports
+          - inetutils               # network utilities like hostname
+          - net-tools               # network utilities like arp, netstat
+          - python-pip              # package manager
+          - python-setuptools       # additional packaging tools
+          - python-pexpect          # child application control
+
+# PARU TO ACCESS AUR REPOSITORY  ----------------------------------------------
+
+    - name: git clone paru repo in to /tmp
+      become: no
+      git:
+        repo: 'https://aur.archlinux.org/paru.git'
+        dest: /tmp/paru
+        clone: yes
+
+    - name: Build and install Paru
+      command: makepkg -si --noconfirm
+      args:
+        chdir: /tmp/paru
+      become: no
+
+    - name: Clean up Paru build directory
+      file:
+        path: /tmp/paru
+        state: absent
+      become: no
