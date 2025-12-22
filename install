@@ -1,0 +1,23 @@
+#/usr/bin/env bash
+
+read -s -rp "Root Password: " root_pass; echo
+read -s -rp "Confirm root password: " root_pass2; echo
+[ "$root_pass" = "$root_pass2" ] || { echo "Passwords don't match"; exit 1; }
+
+#echo "root var $root_pass root2 var $root_pass2"
+#root_pass2 = "" && unset root_pass2
+#echo "root var $root_pass root2 var $root_pass2"
+#exit
+read -rp "Username: " username
+read -s -rp "Password: " password; echo
+read -s -rp "Confirm password: " password2; echo
+[ "$password" = "$password2" ] || { echo "Passwords don't match"; exit 1; }
+
+hash=$(mkpasswd -m sha512crypt --stdin <<<"$password")
+root_hash=$(mkpasswd -m sha512crypt --stdin <<<"$root_pass")
+
+creds=$(jq -n --arg u "$username" --arg h "$hash" --arg rp "$root_hash" '{users:[{username:$u,enc_password:$h,sudo:true}], root_enc_password:$rp}')
+printf '%s' "$creds" > /tmp/user_credentials.json
+chmod 600 /tmp/user_credentials.json
+
+cat /tmp/user_credentials.json
