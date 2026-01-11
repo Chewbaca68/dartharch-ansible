@@ -25,7 +25,7 @@ cat /tmp/user_credentials.json
 MAX_RETRIES=3
 RETRY_COUNT=0
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -s --fail https://raw.githubusercontent.com/Chewbaca68/dartharch-ansible/main/user_configuration.json -o /tmp/user_configuration.json; then
+    if curl -s --fail https://raw.githubusercontent.com/Chewbaca68/dartharch-ansible/master/user_configuration.json -o /tmp/user_configuration.json; then
         break
     fi
     RETRY_COUNT=$((RETRY_COUNT + 1))
