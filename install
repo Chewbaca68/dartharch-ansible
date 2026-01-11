@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
 
-[ -t 0 ] || exec </dev/tty
-
-read -s -rp "Root Password: " root_pass < /dev/tty; echo
-read -s -rp "Confirm root password: " root_pass2 < /dev/tty; echo
+read -s -rp "Root Password: " root_pass; echo
+read -s -rp "Confirm root password: " root_pass2; echo
 [ "$root_pass" = "$root_pass2" ] || { echo "Passwords don't match"; exit 1; }
 
 #echo "root var $root_pass root2 var $root_pass2"
 #root_pass2 = "" && unset root_pass2
 #echo "root var $root_pass root2 var $root_pass2"
 #exit
-read -rp "Username: " username < /dev/tty
-read -s -rp "Password: " password < /dev/tty; echo
-read -s -rp "Confirm password: " password2 < /dev/tty; echo
+read -rp "Username: " username
+read -s -rp "Password: " password; echo
+read -s -rp "Confirm password: " password2; echo
 [ "$password" = "$password2" ] || { echo "Passwords don't match"; exit 1; }
 
 hash=$(mkpasswd -m sha512crypt --stdin <<<"$password")
