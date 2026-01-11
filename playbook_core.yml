@@ -7,23 +7,37 @@
 
 # ARCH FULL UPDATE  ----------------------------------------------------------
 
-    - name: update arch
+    - name: update_arch
       pacman:
         update_cache: yes
         upgrade: yes
 
-# JOING THE DARK SIDE  -------------------------------------------------------
+# BLACKARCH REPOSITORY SETUP  --------------------------------------------------
 
-    - name: Download the BlackArch strap.sh script
+    - name: check_if_blackarch_repo_exists
+      command: grep -q '\[blackarch\]' /etc/pacman.conf
+      register: blackarch_repo
+      failed_when: false
+      changed_when: false
+
+    - name: download_blackarch_strap_script
       get_url:
         url: https://blackarch.org/strap.sh
         dest: /tmp/strap.sh
         mode: '0755'
+      when: blackarch_repo.rc != 0
 
+    - name: execute_blackarch_strap_script
+      command: /bin/bash /tmp/strap.sh
+      when: blackarch_repo.rc != 0
+
+    - name: update_package_databases
+      pacman:
+        update_cache: yes
 
 # INSTALL VARIOUS PACKAGES  --------------------------------------------------
 
-    - name: install bunch of packages
+    - name: install_bunch_of_packages
       pacman:
         update_cache: yes
         name:
@@ -51,20 +65,34 @@
 
 # PARU TO ACCESS AUR REPOSITORY  ----------------------------------------------
 
-    - name: git clone paru repo in to /tmp
+    - name: git_clone_paru_repo
       become: no
       git:
         repo: 'https://aur.archlinux.org/paru.git'
         dest: /tmp/paru
         clone: yes
 
-    - name: Build and install Paru
+    - name: build_and_install_paru
       command: makepkg -si --noconfirm
       args:
         chdir: /tmp/paru
       become: no
 
-    - name: Clean up Paru build directory
+# INSTALL BLACKARCH TOOLS  ----------------------------------------------------
+
+    - name: install_blackarch_officials_metapackage
+      pacman:
+        name: blackarch-officials
+        state: present
+
+# CLEANUP TEMPORARY FILES  ---------------------------------------------------
+
+    - name: clean_up_blackarch_strap_script
+      file:
+        path: /tmp/strap.sh
+        state: absent
+
+    - name: clean_up_paru_build_directory
       file:
         path: /tmp/paru
         state: absent

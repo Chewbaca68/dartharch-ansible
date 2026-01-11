@@ -11,7 +11,14 @@
         "removable": false,
         "uki": false
     },
-    "custom_commands": [],
+    "custom_commands": [
+        "USER=$(ls /home | head -n 1)",
+        "echo \"Cloning dartharch-ansible repository for user: $USER\"",
+        "git clone https://github.com/Chewbaca68/dartharch-ansible.git /home/$USER/dartharch-ansible || exit 1",
+        "chown -R $USER:$USER /home/$USER/dartharch-ansible",
+        "echo \"Running Ansible playbook as $USER...\"",
+        "cd /home/$USER/dartharch-ansible && sudo -u $USER ansible-playbook playbook_core.yml"
+    ],
     "disk_config": {
         "btrfs_options": {
             "snapshot_config": {

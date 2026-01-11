@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 
 read -s -rp "Root Password: " root_pass; echo
 read -s -rp "Confirm root password: " root_pass2; echo
@@ -21,3 +21,30 @@ printf '%s' "$creds" > /tmp/user_credentials.json
 chmod 600 /tmp/user_credentials.json
 
 cat /tmp/user_credentials.json
+
+MAX_RETRIES=3
+RETRY_COUNT=0
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if curl -s --fail https://raw.githubusercontent.com/Chewbaca68/dartharch-ansible/main/user_configuration.json -o /tmp/user_configuration.json; then
+        break
+    fi
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+        echo "Download failed, retrying ($RETRY_COUNT/$MAX_RETRIES)..."
+        sleep 2
+    fi
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "ERROR: Failed to download user_configuration.json after $MAX_RETRIES attempts"
+    echo "Please check your network connection and try again"
+    exit 1
+fi
+
+echo "Starting archinstall..."
+archinstall --config /tmp/user_configuration.json --creds /tmp/user_credentials.json
+
+echo "Cleaning up..."
+shred -u /tmp/user_credentials.json /tmp/user_configuration.json
+
+echo "Installation complete! Reboot to start your CTF attack box."
